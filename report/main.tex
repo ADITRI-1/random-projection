@@ -1,0 +1,264 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{results/}}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+\newcommand{\fillme}[1]{\textcolor{red}{#1}}
+
+% ---------------------------------------------------------------
+% TIMINGS: fill these in from the FINAL run of q1.py
+% ---------------------------------------------------------------
+\newcommand{\timeA}{4.38}          % (a) k-means on D
+\newcommand{\timeMfive}{1.73}      % (d) m = 5
+\newcommand{\timeMten}{2.20}       % (d) m = 10
+\newcommand{\timeMfifteen}{3.13}   % (d) m = 15
+\newcommand{\timeMtwenty}{2.76}    % (d) m = 20
+\newcommand{\timeMtwentyfive}{2.87}% (d) m = 25
+
+\begin{document}
+
+% ================= FRONT PAGE =================
+\begin{titlepage}
+    \centering
+    \vspace*{6cm}
+    {\LARGE\bfseries ASSIGNMENT 1\par}
+    \vspace{0.8cm}
+    {\large\bfseries\itshape (Data Science)\par}
+    \vfill
+    {\large\bfseries ADITRI JAIN (2024027)\par}
+    \vspace{0.4cm}
+    {\large\bfseries KANUPRIYA GUPTA (2023269)\par}
+    \vspace{2cm}
+\end{titlepage}
+
+% ================= DATA =================
+\section*{Data}
+
+We loaded the 10\% KDD Cup 1999 data using \texttt{fetch\_kddcup99(subset=None, as\_frame=True)}.
+To build $D$, we one-hot encoded \texttt{protocol\_type}, \texttt{service} and \texttt{flag}
+and converted the other 38 features to float. We then dropped the two columns that have the
+same value on every row (\texttt{num\_outbound\_cmds} and \texttt{is\_host\_login}) and
+rescaled each column to $[0,1]$.
+
+\begin{center}
+$n = 494{,}021$ rows, \qquad $d = 116$ columns.
+\end{center}
+
+The code is in \texttt{prep.py} (data) and \texttt{q1.py} (all parts of Question 1).
+
+% ================= QUESTION 1 =================
+\section*{Question 1: JL for $k$-means clustering}
+
+All clusterings use \texttt{KMeans(n\_clusters=15, n\_init=5, random\_state=0)}. The matrix $A$
+is drawn with NumPy as \texttt{rng.normal(0, 1/np.sqrt(m), size=(m, d))}, using the seed
+\texttt{np.random.default\_rng(1)} for parts (b)--(d) and \texttt{np.random.default\_rng(2)}
+for part (e). Running \texttt{q1.py} again gives the same numbers (except the times).
+
+% ---------------- (a) ----------------
+\subsection*{(a)}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+cost$(D,B)$ & 53{,}540.69 \\
+Wall-clock time & \timeA\ s \\
+\bottomrule
+\end{tabular}
+\caption{$k$-means on $D$.}
+\end{table}
+
+% ---------------- (b) ----------------
+\subsection*{(b)}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{clrrrrr}
+\toprule
+$m$ & & Run 1 & Run 2 & Run 3 & Run 4 & Run 5 \\
+\midrule
+\multirow{2}{*}{5}  & cost$(D,\hat B)$ & 68{,}627.41 & 62{,}564.09 & 59{,}738.25 & 56{,}108.62 & 72{,}805.03 \\
+                    & ratio            & 1.2818 & 1.1685 & 1.1158 & 1.0480 & 1.3598 \\
+\midrule
+\multirow{2}{*}{10} & cost$(D,\hat B)$ & 53{,}438.76 & 60{,}751.89 & 58{,}228.92 & 59{,}565.60 & 52{,}916.48 \\
+                    & ratio            & 0.9981 & 1.1347 & 1.0876 & 1.1125 & 0.9883 \\
+\midrule
+\multirow{2}{*}{15} & cost$(D,\hat B)$ & 55{,}120.00 & 52{,}859.53 & 55{,}815.34 & 55{,}024.33 & 53{,}824.66 \\
+                    & ratio            & 1.0295 & 0.9873 & 1.0425 & 1.0277 & 1.0053 \\
+\midrule
+\multirow{2}{*}{20} & cost$(D,\hat B)$ & 56{,}651.59 & 59{,}784.80 & 53{,}279.89 & 52{,}062.00 & 54{,}225.08 \\
+                    & ratio            & 1.0581 & 1.1166 & 0.9951 & 0.9724 & 1.0128 \\
+\midrule
+\multirow{2}{*}{25} & cost$(D,\hat B)$ & 55{,}094.72 & 55{,}524.17 & 52{,}932.59 & 55{,}258.92 & 54{,}503.53 \\
+                    & ratio            & 1.0290 & 1.0370 & 0.9886 & 1.0321 & 1.0180 \\
+\bottomrule
+\end{tabular}
+\caption{cost$(D,\hat B)$ and cost$(D,\hat B)/\text{cost}(D,B)$ for each run.}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{c ccc ccc}
+\toprule
+ & \multicolumn{3}{c}{cost$(D,\hat B)/\text{cost}(D,B)$} & \multicolumn{3}{c}{cost$(D,B^+)/\text{cost}(D,B)$} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+$m$ & Mean & Min & Max & Mean & Min & Max \\
+\midrule
+5  & 1.1948 & 1.0480 & 1.3598 & 80.36 & 79.67 & 81.27 \\
+10 & 1.0642 & 0.9883 & 1.1347 & 76.10 & 74.64 & 77.71 \\
+15 & 1.0185 & 0.9873 & 1.0425 & 70.51 & 66.20 & 72.34 \\
+20 & 1.0310 & 0.9724 & 1.1166 & 71.46 & 69.20 & 74.01 \\
+25 & 1.0210 & 0.9886 & 1.0370 & 63.85 & 59.74 & 66.08 \\
+\bottomrule
+\end{tabular}
+\caption{Mean, smallest and largest ratio over the 5 runs, for $\hat B$ (part b) and $B^+$ (part c).}
+\label{tab:summary}
+\end{table}
+
+\textbf{How the ratio changes with $m$.} As $m$ increases, the ratio gets closer to 1.
+At $m=5$ the clustering is clearly worse than $k$-means on $D$ (mean 1.19, worst run 1.36).
+At $m=10$ the mean drops to 1.06, and from $m=15$ onwards it stays around 1.02--1.03 with a
+smaller gap between the best and worst runs. This is what we expected. With more dimensions,
+the random projection keeps the distances between points more accurately, and since the
+$k$-means cost only depends on these distances, the clusters found on $E$ are almost as good
+as the ones found on $D$. The mean at $m=20$ is slightly higher than at $m=15$ because of one
+bad run (1.1166). With only 5 runs per $m$, this is just random variation.
+
+\textbf{Ratios below 1.} Six runs have a ratio below 1, the lowest being 0.9724 at $m=20$.
+This can happen because $k$-means only finds a local optimum, so $B$ is not the best possible
+set of centres, and the clustering found on $E$ can sometimes end up slightly better. Also,
+when we compute cost$(D,\hat B)$, every point is reassigned to its nearest centre in $\hat B$,
+which can only lower the cost.
+
+% ---------------- (c) ----------------
+\subsection*{(c)}
+
+The ratio cost$(D,B^+)/\text{cost}(D,B)$ is shown next to the ratio for $\hat B$ in
+Table~\ref{tab:summary}. It is between 59.7 and 81.3 in every run, while the ratio for
+$\hat B$ is close to 1.
+
+The reason is that the centre $k$-means finds on $E$ is (almost exactly) $A\hat b_j$, so
+$A^+a \approx A^+A\,\hat b_j$. The matrix $A^+A$ projects onto an $m$-dimensional subspace,
+so $B^+$ only keeps the part of each centre that lies in that subspace and loses the rest.
+The centres shrink towards the origin and end up far from the data, which makes the cost very
+large. It gets a little better as $m$ grows (about 80 at $m=5$ to 64 at $m=25$) because more
+of each centre is kept.
+
+We would use $\hat B$, since its cost is almost the same as that of $k$-means on $D$.
+
+% ---------------- (d) ----------------
+\subsection*{(d)}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lccccc}
+\toprule
+$m$ & 5 & 10 & 15 & 20 & 25 \\
+\midrule
+Mean time (s) & \timeMfive & \timeMten & \timeMfifteen & \timeMtwenty & \timeMtwentyfive \\
+\bottomrule
+\end{tabular}
+\caption{Time to compute $E$ and run $k$-means on $E$, averaged over the 5 runs.
+$k$-means on $D$ took \timeA\ s.}
+\label{tab:time}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{q1d_time.png}
+\caption{Mean time against $m$. The dashed line is the time of $k$-means on $D$ from (a).}
+\end{figure}
+
+For every $m$, computing $E$ and running $k$-means on it was faster than $k$-means on $D$
+(\timeA\ s). It took 1.73 s at $m=5$, which is about 2.5 times faster, and between 2.2 and
+3.1 s for the larger values of $m$. The time mostly goes up with $m$, since each distance
+computation uses $m$ coordinates. The value at $m=15$ is a bit higher than at $m=20$ and $25$
+because of one slower run (4.29 s). Computing $E$ itself takes very little time (about 0.1 s).
+
+The speedup is much smaller than $d/m$ (for example $116/5 \approx 23$). Part of the work in
+$k$-means does not depend on the dimension, and at small $m$ the clusters overlap more, so
+$k$-means sometimes needs more iterations to converge.
+
+% ---------------- (e) ----------------
+\subsection*{(e)}
+
+We picked $10^4$ random pairs once, skipping any pair with $D_i = D_l$, and used the same pairs
+for every $m$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{q1e_boxplots.png}
+\caption{Left: ratio (i) (blue) and ratio (ii) (orange) against $m$. Right: ratio (ii) on
+its own scale, since its boxes are too small to see on the left. Outliers of (i) are not drawn.}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{clrrrrr}
+\toprule
+$m$ & Ratio & Mean & Median & Std & Min & Max \\
+\midrule
+\multirow{2}{*}{5}  & (i) pairs & 0.4403 & 0.3476 & 0.4076 & 0.0071 & 2.7302 \\
+                    & (ii) cost & 0.9939 & 1.0093 & 0.0961 & 0.8293 & 1.1305 \\
+\midrule
+\multirow{2}{*}{10} & (i) pairs & 0.9030 & 0.7602 & 0.3589 & 0.2035 & 2.7880 \\
+                    & (ii) cost & 0.9789 & 0.9765 & 0.1101 & 0.7661 & 1.1538 \\
+\midrule
+\multirow{2}{*}{15} & (i) pairs & 1.3372 & 1.3401 & 0.4464 & 0.3318 & 2.5196 \\
+                    & (ii) cost & 1.0313 & 1.0425 & 0.0745 & 0.8953 & 1.2237 \\
+\midrule
+\multirow{2}{*}{20} & (i) pairs & 1.3789 & 1.4266 & 0.2743 & 0.3589 & 1.9541 \\
+                    & (ii) cost & 1.0083 & 1.0006 & 0.0512 & 0.9016 & 1.1416 \\
+\midrule
+\multirow{2}{*}{25} & (i) pairs & 0.9490 & 0.8855 & 0.2179 & 0.3860 & 2.1907 \\
+                    & (ii) cost & 0.9908 & 0.9971 & 0.0501 & 0.8776 & 1.0779 \\
+\bottomrule
+\end{tabular}
+\caption{Summary of the ratios: (i) over $10^4$ pairs with one draw of $A$, (ii) over 20 draws of $A$.}
+\end{table}
+
+\textbf{Which has the smaller spread.} The cost ratio (ii) has a much smaller spread than the
+pair ratio (i) for every $m$. Its standard deviation is between 0.05 and 0.11 and it stays close
+to 1. The pair ratio has a standard deviation between 0.22 and 0.45, and single values go from
+almost 0 up to about 2.8. One random $A$ can stretch or shrink the distance of a single pair a
+lot, but the clustering cost adds up the distances of all 494,021 points to their cluster means,
+so the errors in different directions cancel out.
+
+\textbf{How each changes with $m$.} The spread of (ii) goes down as $m$ grows: the standard
+deviation is about 0.10 for $m=5$ and $10$ and about 0.05 for $m=20$ and $25$. The spread of (i)
+also goes down overall (the range goes from $[0.007,\ 2.73]$ at $m=5$ to $[0.39,\ 2.19]$ at
+$m=25$), but not smoothly, and its median is far from 1 for some values of $m$ (0.35 at $m=5$,
+1.43 at $m=20$). This is because, for each $m$, all $10^4$ pairs use the same single $A$. Most of
+the pairs are of a few types (such as neptune--smurf and normal--smurf), so their differences
+point in similar directions, and one $A$ moves most of them up or down together.
+
+\input{q2}
+
+% ================= REFERENCES =================
+\section*{Discussion and references}
+
+Discussed with: \fillme{[names of other groups, or ``none'']}
+
+URLs used:
+\begin{itemize}
+    \item \url{https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html}
+    \item \url{https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_kddcup99.html}
+    \item \fillme{[add any other URL you used]}
+\end{itemize}
+
+\end{document}
