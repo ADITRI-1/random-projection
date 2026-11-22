@@ -35,8 +35,8 @@ D, y, cols, dropped = load_data()
 n, d = D.shape
 print("n =", n, " d =", d)
 
-# small warm-up run so that the first timing does not include library start-up
-KMeans(n_clusters=k, n_init=1, random_state=0).fit(D[:20000])
+# small warm-up run (result not used) so that the first timing does not include library start-up
+KMeans(n_clusters=k, n_init=5, random_state=0).fit(D[:20000])
 
 
 # ---------------- (a) k-means on D ----------------
@@ -170,7 +170,7 @@ for m in m_list:
 
     # (ii) 20 draws of A, ratio of the cost of the same clusters C_D
     ratios = []
-    for t in range(20):
+    for draw in range(20):
         A = rng.normal(0, 1 / np.sqrt(m), size=(m, d))
         E = D @ A.T
         mu_E = get_centres(E, labels_D, k)
